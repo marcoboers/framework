@@ -70,8 +70,7 @@ class AboutCommand extends Command
      */
     public function handle()
     {
-        $this->gatherEnvironmentData();
-        $this->gatherDriverData();
+        $this->gatherApplicationInformation();
 
         collect(static::$data)->sortBy(function ($data, $key) {
             $index = array_search($key, ['Environment', 'Cache', 'Drivers']);
@@ -139,11 +138,11 @@ class AboutCommand extends Command
     }
 
     /**
-     * Gather data about the application's environment.
+     * Gather information about the application.
      *
      * @return array
      */
-    protected function gatherEnvironmentData()
+    protected function gatherApplicationInformation()
     {
         static::add('Environment', [
             'Laravel Version' => $this->laravel->version(),
@@ -162,6 +161,17 @@ class AboutCommand extends Command
             'Events' => file_exists($this->laravel->bootstrapPath('cache/events.php')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
             'Views' => $this->hasPhpFiles($this->laravel->storagePath('framework/views')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
         ]);
+
+        static::add('Drivers', array_filter([
+            'Broadcasting' => config('broadcasting.default'),
+            'Cache' => config('cache.default'),
+            'Database' => config('database.default'),
+            'Mail' => config('mail.default'),
+            'Octane' => config('octane.server'),
+            'Queue' => config('queue.default'),
+            'Session' => config('session.driver'),
+            'Scout' => config('scout.driver'),
+        ]));
     }
 
     /**
@@ -173,25 +183,6 @@ class AboutCommand extends Command
     protected function hasPhpFiles(string $path): bool
     {
         return count(glob($path.'/*.php')) > 0;
-    }
-
-    /**
-     * Gather data about the drivers configured in the application.
-     *
-     * @return array
-     */
-    protected function gatherDriverData()
-    {
-        static::add('Drivers', array_filter([
-            'Broadcasting' => config('broadcasting.default'),
-            'Cache' => config('cache.default'),
-            'Database' => config('database.default'),
-            'Mail' => config('mail.default'),
-            'Octane' => config('octane.server'),
-            'Queue' => config('queue.default'),
-            'Session' => config('session.driver'),
-            'Scout' => config('scout.driver'),
-        ]));
     }
 
     /**
