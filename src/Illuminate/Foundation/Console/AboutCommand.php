@@ -88,7 +88,7 @@ class AboutCommand extends Command
     /**
      * Display the information.
      *
-     * @param  \Illuminate\Support\Collection $data
+     * @param  \Illuminate\Support\Collection  $data
      * @return void
      */
     protected function display($data)
