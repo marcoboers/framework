@@ -74,7 +74,7 @@ class AboutCommand extends Command
         $this->gatherDriverData();
 
         collect(static::$data)->sortBy(function ($data, $key) {
-            $index = array_search($key, ['Environment', 'Drivers']);
+            $index = array_search($key, ['Environment', 'Cache', 'Drivers']);
 
             if ($index === false) {
                 return 99;
@@ -150,13 +150,29 @@ class AboutCommand extends Command
             'PHP Version' => phpversion(),
             'Composer Version' => $this->composer->getVersion() ?? '<fg=yellow;options=bold>-</>',
             'Environment' => $this->laravel->environment(),
-            'App Debug' => config('app.debug') ? '<fg=yellow;options=bold>ENABLED</>' : 'DISABLED',
-            'App Name' => config('app.name'),
-            'App URL' => config('app.url'),
-            'App Root' => $this->laravel->basePath(),
-            'Web Root' => $this->laravel->make('path.public'),
-            'Maintenance Mode' => $this->laravel->isDownForMaintenance() ? '<fg=yellow;options=bold>YES</>' : 'NO',
+            'Debug Mode' => config('app.debug') ? '<fg=yellow;options=bold>ENABLED</>' : 'OFF',
+            'Application Name' => config('app.name'),
+            'URL' => Str::of(config('app.url'))->replace(['http://', 'https://'], ''),
+            'Maintenance Mode' => $this->laravel->isDownForMaintenance() ? '<fg=yellow;options=bold>ENABLED</>' : 'OFF',
         ]);
+
+        static::add('Cache', [
+            'Config' => file_exists($this->laravel->bootstrapPath('cache/config.php')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
+            'Routes' => file_exists($this->laravel->bootstrapPath('cache/routes-v7.php')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
+            'Events' => file_exists($this->laravel->bootstrapPath('cache/events.php')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
+            'Views' => $this->hasPhpFiles($this->laravel->storagePath('framework/views')) ? '<fg=green;options=bold>CACHED</>' : '<fg=yellow;options=bold>NOT CACHED</>',
+        ]);
+    }
+
+    /**
+     * Check whether the given directory has PHP files.
+     *
+     * @param  string  $path
+     * @return bool
+     */
+    protected function hasPhpFiles(string $path): bool
+    {
+        return count(glob($path.'/*.php')) > 0;
     }
 
     /**
