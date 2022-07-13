@@ -15,7 +15,8 @@ class AboutCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'about {--json : Output the information as JSON}';
+    protected $signature = 'about {--only= : The section to display}
+                {--json : Output the information as JSON}';
 
     /**
      * The name of the console command.
@@ -80,7 +81,11 @@ class AboutCommand extends Command
             }
 
             return $index;
-        })->pipe(fn ($data) => $this->display($data));
+        })
+            ->filter(function ($data, $key) {
+                return $this->option('only') ? in_array(Str::of($key)->lower()->snake(), $this->sections()) : true;
+            })
+            ->pipe(fn ($data) => $this->display($data));
 
         return 0;
     }
@@ -174,8 +179,19 @@ class AboutCommand extends Command
     }
 
     /**
+     * Get the sections passed to the command.
+     *
+     * @return array
+     */
+    protected function sections()
+    {
+        return array_filter(explode(',', $this->option('only') ?? ''));
+    }
+
+    /**
      * Add additional data to the output.
      *
+     * @param  string  $section
      * @param  string|array  $data
      * @param  string|null  $value
      * @return void
