@@ -8,6 +8,7 @@ use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Database\Eloquent\Factory as ModelFactory;
+use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\View\Compilers\BladeCompiler;
 
 abstract class ServiceProvider
@@ -388,6 +389,19 @@ abstract class ServiceProvider
     public static function publishableGroups()
     {
         return array_keys(static::$publishGroups);
+    }
+
+    /**
+     * Add information to the About command.
+     *
+     * @param  string  $section
+     * @param  string|array  $data
+     * @param  string|null  $value
+     * @return void
+     */
+    public function about(string $section, $data, $value = null)
+    {
+        AboutCommand::add($section, $data, $value);
     }
 
     /**
