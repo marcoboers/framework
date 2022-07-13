@@ -4,6 +4,7 @@ namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Composer;
+use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'about')]
@@ -14,7 +15,7 @@ class AboutCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'about';
+    protected $signature = 'about {--json : Output the information as JSON}';
 
     /**
      * The name of the console command.
@@ -79,8 +80,31 @@ class AboutCommand extends Command
             }
 
             return $index;
-        })
-        ->each(function ($data, $section) {
+        })->pipe(fn ($data) => $this->display($data));
+
+        return 0;
+    }
+
+    /**
+     * Display the information.
+     *
+     * @param  \Illuminate\Support\Collection $data
+     * @return void
+     */
+    protected function display($data)
+    {
+        $this->option('json') ? $this->displayJson($data) : $this->displayDetail($data);
+    }
+
+    /**
+     * Display the information as a detail view.
+     *
+     * @param  \Illuminate\Support\Collection  $data
+     * @return void
+     */
+    protected function displayDetail($data)
+    {
+        $data->each(function ($data, $section) {
             $this->newLine();
             $this->components->twoColumnDetail('  <fg=green;options=bold>'.$section.'</>');
 
@@ -92,8 +116,21 @@ class AboutCommand extends Command
                 $this->components->twoColumnDetail($label, $value);
             }
         });
+    }
 
-        return 0;
+    /**
+     * Display the information as JSON.
+     *
+     * @param  \Illuminate\Support\Collection  $data
+     * @return void
+     */
+    protected function displayJson($data)
+    {
+        $output = $data->flatMap(function ($data, $section) {
+            return [(string) Str::of($section)->slug() => collect($data)->mapWithKeys(fn ($item, $key) => [(string) Str::of($item[0])->lower()->slug() => $item[1]])];
+        });
+
+        $this->output->writeln(strip_tags(json_encode($output)));
     }
 
     /**
