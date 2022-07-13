@@ -127,7 +127,7 @@ class AboutCommand extends Command
     protected function displayJson($data)
     {
         $output = $data->flatMap(function ($data, $section) {
-            return [(string) Str::of($section)->slug() => collect($data)->mapWithKeys(fn ($item, $key) => [(string) Str::of($item[0])->lower()->slug() => $item[1]])];
+            return [(string) Str::of($section)->snake() => collect($data)->mapWithKeys(fn ($item, $key) => [(string) Str::of($item[0])->lower()->snake() => $item[1]])];
         });
 
         $this->output->writeln(strip_tags(json_encode($output)));
