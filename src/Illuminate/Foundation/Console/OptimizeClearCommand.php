@@ -3,6 +3,7 @@
 namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'optimize:clear')]
@@ -26,6 +27,8 @@ class OptimizeClearCommand extends Command
      */
     protected static $defaultName = 'optimize:clear';
 
+    protected static array $additionalCommands = [];
+
     /**
      * The console command description.
      *
@@ -47,6 +50,15 @@ class OptimizeClearCommand extends Command
         $this->call('config:clear');
         $this->call('clear-compiled');
 
+        foreach (self::$additionalCommands as $command) {
+            $this->call($command);
+        }
+
         $this->info('Caches cleared successfully.');
+    }
+
+    public static function addCommands(string|array $commands): void
+    {
+        self::$additionalCommands = array_merge(self::$additionalCommands, Arr::wrap($commands));
     }
 }

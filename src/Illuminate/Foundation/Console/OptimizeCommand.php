@@ -3,6 +3,7 @@
 namespace Illuminate\Foundation\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 use Symfony\Component\Console\Attribute\AsCommand;
 
 #[AsCommand(name: 'optimize')]
@@ -26,6 +27,8 @@ class OptimizeCommand extends Command
      */
     protected static $defaultName = 'optimize';
 
+    protected static array $additionalCommands = [];
+
     /**
      * The console command description.
      *
@@ -43,6 +46,15 @@ class OptimizeCommand extends Command
         $this->call('config:cache');
         $this->call('route:cache');
 
+        foreach (self::$additionalCommands as $command) {
+            $this->call($command);
+        }
+
         $this->info('Files cached successfully.');
+    }
+
+    public static function addCommands(string|array $commands): void
+    {
+        self::$additionalCommands = array_merge(self::$additionalCommands, Arr::wrap($commands));
     }
 }
